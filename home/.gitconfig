@@ -1,0 +1,31 @@
+[user]
+name = "Gregoire Etienne"
+email = g.etienne@gmail.com
+
+[color]
+ui = auto
+
+[core]
+autocrlf = false
+eol = lf
+editor = vim
+#gitproxy = gitproxy.sh
+
+[alias]
+st = status
+ci = commit
+br = branch
+co = checkout
+cp = cherry-pick
+dfile = diff --name-status
+ds = diff --staged
+lol = log --no-merges --abbrev-commit --decorate --pretty=format:'%Cblue%h %Creset%s %Cgreen(%cr) %C(bold blue)[%an] %C(bold yellow)%d'
+logs = log --stat
+bra = branch -a
+
+[sendemail]
+smtpserver = smtp.intel.com
+smtpserverport = 25
+smtpencryption = none
+confirm = auto
+
