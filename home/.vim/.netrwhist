@@ -1,0 +1,11 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =9
+let g:netrw_dirhist_1='/home/getienne/brikabrak/share'
+let g:netrw_dirhist_2='/home/getienne/brikabrak/share/chrootBuddy.packages'
+let g:netrw_dirhist_3='/home/getienne/brikabrak/bin'
+let g:netrw_dirhist_4='/home/getienne/brikabrak'
+let g:netrw_dirhist_5='/home/getienne'
+let g:netrw_dirhist_6='/home/getienne/brikabrak/share/chrootBuddy.packages'
+let g:netrw_dirhist_7='/opt/lane-detection/caltech-lane-detection/src'
+let g:netrw_dirhist_8='/opt/lane-detection/caltech-lane-detection'
+let g:netrw_dirhist_9='/opt/lane-detection/caltech-lane-detection/src'
