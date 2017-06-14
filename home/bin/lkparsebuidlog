@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# $1: log file to parse
+# $2: pattern to search
+
+LOGFILE=$1
+
+echo -e "\n${green}-----CHECK ERRORS${nocolor}"
+if [ ! -z "$2" ]
+then
+	grep $2 $LOGFILE | grep -i --color "error:"
+	grep $2 $LOGFILE | grep -i --color "undefined reference"
+else
+	grep -i --color "error:" $LOGFILE
+	grep -i --color "undefined reference" $LOGFILE
+fi
+
+echo -e "\n${green}-----CHECK WARNINGS${nocolor}"
+if [ ! -z "$2" ]
+then
+	grep $2 $LOGFILE | grep -i --color "warning:" | grep -v mobilevisor
+else
+	grep -i --color "warning:" $LOGFILE | grep -v mobilevisor
+fi
+
+echo -e "\n${green}-----BUILD RESULT${nocolor}"
+tail -n2 $LOGFILE

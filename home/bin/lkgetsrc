@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# google  https://android.googlesource.com/kernel/common (fetch)
+# google  https://android.googlesource.com/kernel/common (push)
+# mainline        https://github.com/torvalds/linux.git (fetch)
+# mainline        https://github.com/torvalds/linux.git (push)
+# stable  https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git (fetch)
+# stable  https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git (push)
+
+
+if [ -z "$1" ]; then
+	DIR=/local/$(whoami)/kernel-linux
+else
+	DIR=$1
+fi
+
+git clone https://github.com/torvalds/linux.git $DIR
+
+cd $DIR
+#git remote add mainline	https://github.com/torvalds/linux.git
+git remote add stable	https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+git remote add google	https://android.googlesource.com/kernel/common
+
+git remote -v
+git fetch --all
+
+

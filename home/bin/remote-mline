@@ -1,0 +1,6 @@
+#!/bin/bash
+git remote add mline	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+#git remote add mainline	https://github.com/torvalds/linux.git
+git remote -v
+
+

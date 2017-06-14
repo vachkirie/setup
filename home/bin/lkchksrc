@@ -1,0 +1,116 @@
+#!/bin/bash
+
+export USE_CCACHE=1
+export CCACHE_DIR=/local/$(whoami)/ccache
+export CC='ccache gcc'
+export CXX='ccache g++'
+export PATH="/usr/intel/bin/ccache:$PATH"
+
+JOBS=16
+
+function print_help()
+{
+	echo -e "lkchksrc"
+	echo -e "	-c --config		defconfigs to test"
+	echo -e "	-b --build		build kernel"
+	echo -e "	-s --savedefconfig	update defconfig to savedefconfig"
+	echo -e "	-d --dtb		compile all dtb"
+	echo -e "	   --checkpatch		checkpatch from commit"
+	echo
+	echo -e "lkchksrc -s -b -d -c 'i386_sofia_3gr_defconfig i386_sofia_lte_defconfig'"
+	echo -e "lkchksrc -s --config 'i386_sofia_3gr_defconfig i386_sofia_lte_defconfig'"
+	echo -e "lkchksrc --checkpatch HEAD~3"
+}
+
+function catch_error()
+{
+	if [ $? != 0 ] ; then
+		echo -e "FAILED"; exit 1
+	fi
+}
+
+TEMP=`getopt -o c:bsd \
+	-l config:,savedefconfig,build,dtb,checkpatch: \
+	-- "$@"`
+
+if [ $? != 0 ] ; then print_help >&2 ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+while true ; do
+	case "$1" in
+		-c|--config) CONFIGS=$2;shift 2;;
+		--checkpatch) CHECKPATCH_BASE=$2;shift 2;;
+    		-s|--savedefconfig) SAVEDEFCONFIG=1;shift;;
+    		-b|--build) BUILD=1;shift;;
+		-d|--dtb) DTB=1;shift;;
+		--) shift ; break ;;
+		*) echo "Internal error!" ; exit 1 ;;
+	esac
+done
+
+
+
+
+
+#if [ -z "$CONFIGS" ]; then
+#	CONFIGS="i386_sofia_3gr_defconfig i386_sofia_lte_defconfig"
+#fi
+
+for config in $CONFIGS
+do
+	echo -e "==========================================================================="
+	echo -e "config: $config --> ../$config.log"
+	git clean -fdx &> /dev/null
+	make $config &>../$config.log
+	if [ $SAVEDEFCONFIG ]; then
+		make savedefconfig
+		cp defconfig arch/x86/configs/$config
+	else
+		cp .config arch/x86/configs/$config
+	fi
+
+	if [ $BUILD ]; then
+		echo -e "Building ..."
+		make -j$JOBS &>>../$config.log
+		echo
+		lkparsebuidlog ../$config.log
+	fi
+done
+
+if [ $DTB ]; then
+	if [ -z "$CONFIGS" ]; then
+		echo -e "Missing config"
+	fi
+	echo -e "==========================================================================="
+	echo -e "dtb: --> ../dtb.log"
+	git clean -fdx &> /dev/null
+	make i386_sofia_3gr_defconfig &> /dev/null
+	make -j$JOBS dtbs &>../dtb.log
+fi
+
+if [ $CHECKPATCH_BASE ]; then
+	git diff $CHECKPATCH_BASE | ./scripts/checkpatch.pl - &> cp.log
+	grep -A1 ERROR cp.log |grep -v "Missing Signed-off-by" &> cp.logerr
+	grep -A1 WARNING cp.log |grep -v "Missing Signed-off-by" &> cp.logwarn
+	CPERRORS=$(cat cp.logerr)
+	CPWARN=$(cat cp.logwarn)
+	if [ -n "$CPERRORS" ] ||  [ -n "$CPWARN" ] ; then
+		echo -e "==========================================================================="
+		echo -e "checkpatch: errors"
+		cat cp.logerr
+		echo -e "checkpatch: warnings"
+		cat cp.logwarn
+		exit 2
+	fi
+fi
+
+echo -e "Cleaning ..."
+git clean -fdx &> /dev/null
+
+# Check if configs are modified
+if [ -n "$CONFIGS" ]; then
+	git status
+fi
+
+

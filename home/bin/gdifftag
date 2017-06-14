@@ -1,0 +1,26 @@
+#!/bin/bash
+
+FROM=$1
+TO=$2
+ON=$3
+
+
+#echo -e "git log --oneline HEAD..review/sofia/development $1"
+#git log --oneline HEAD..review/sofia/development $1
+#git log --oneline HEAD..review/sofia/development $1| wc -l
+
+#echo -e "git log --oneline review/sofia/development..HEAD $1"
+#git log --oneline review/sofia/development..HEAD $1
+#git log --oneline review/sofia/development..HEAD $1 | wc -l
+
+#echo -e "git log --no-merges --cherry-mark --left-right --oneline review/sofia/development..HEAD $1"
+#git log --no-merges --cherry-mark --left-right --oneline review/sofia/development..HEAD $1
+
+echo -e "git diff --name-only $FROM..$TO $ON > files.diff"
+git diff --name-only $FROM..$TO $ON > files.diff
+cat files.diff
+echo -e "git log --oneline --cherry-pick --left-right --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit $FROM...$TO $ON"
+#git log --oneline --cherry-pick --left-right --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%Creset %s %Cgreen(%cr) %C(bold blue)[%an]%Creset' --abbrev-commit review/sofia/development...HEAD $1
+git log --oneline --cherry-pick --left-right --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%Creset %s %Cgreen(%cr) %C(bold blue)[%an]%Creset' --abbrev-commit $FROM...$TO $ON
+
+

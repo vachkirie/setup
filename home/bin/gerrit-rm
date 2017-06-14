@@ -1,0 +1,20 @@
+
+#!/bin/bash
+
+projects="a/bsp/kernel/cht \
+		a/bsp/kernel/bxt"
+#projects="a/bsp/kernel/cht "
+#projects+="a/bsp/kernel/bxt"
+reviewer=gregoire.etienne@intel.com
+
+
+for project in $projects
+	do
+	gerrit_ids=$(ssh android.intel.com gerrit query  status:open project:$project reviewer:$reviewer | grep number: | awk  '{ print $2 }')
+	echo  project:$project $gerrit_ids
+	for gerrit_id in $gerrit_ids
+		do
+		echo ssh android.intel.com gerrit set-reviewers -p $project --remove $reviewer $gerrit_id
+		ssh android.intel.com gerrit set-reviewers -p $project --remove $reviewer $gerrit_id
+	done
+done

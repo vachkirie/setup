@@ -1,0 +1,5 @@
+#!/bin/bash
+
+
+git log --oneline --no-merges --cherry-pick --graph --pretty=format:'%Cred%h%Creset %C(yellow)%Creset %s %Cgreen(%cr) %C(bold blue)[%an]%Creset' --abbrev-commit $*
+

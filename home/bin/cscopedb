@@ -1,0 +1,13 @@
+#! /bin/bash
+
+echo '-k' > ./cscope.files
+echo '-q' >> ./cscope.files
+find . -type f -name '*.[ch]'       >> ./cscope.files
+find . -type f -name '*.[Ss]'       >> ./cscope.files
+find . -type f -name '*.asm'        >> ./cscope.files
+find . -type f -name '*.cpp'        >> ./cscope.files
+find . -type f -name '*.java'        >> ./cscope.files
+find . -type f -name '[Mm]akefile'  >> ./cscope.files
+find . -type f -name '*.mk'         >> ./cscope.files
+
+echo `wc -l cscope.files` files have been added to cscope.files

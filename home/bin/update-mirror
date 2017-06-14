@@ -1,0 +1,21 @@
+#! /bin/bash
+MIRROR_LOCATION=/home/git.view/getienne/mirror
+
+manifest_update()
+{
+	rm -Rf .repo
+	echo -e "repo init -b $1 -u $MIRROR_LOCATION/manifests.git --mirror -m $2\n"
+	repo init -b $1 -u $MIRROR_LOCATION/manifests.git --mirror -m $2 &>> sync.log
+	repo sync -j5 -f &>> sync.log
+
+	tail -n3 sync.log
+	echo ""
+}
+
+cd $MIRROR_LOCATION
+rm sync.log
+manifest_update android/m/mr1/stable/sf3gr_g/master sf3gr_g_mr1
+manifest_update android/m/mr1/stable/master r2
+manifest_update integ/kernel_v4.1 kernel_v4p1
+manifest_update android/master r2
+
