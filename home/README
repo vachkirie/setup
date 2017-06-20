@@ -1,0 +1,109 @@
+
+#------------------------------------------------------------------------------
+chromium
+#------------------------------------------------------------------------------
+	works from linux in intel in /usr/share/applications/chromium.desktop
+	Exec=/usr/bin/chromium --proxy-auto-detect
+
+#------------------------------------------------------------------------------
+ccache
+#------------------------------------------------------------------------------
+	watch -n1 -d ccache -s
+	ccache -M 20G
+	export USE_CCACHE=1
+	export CCACHE_DIR=/local/$(whoami)/ccache
+
+#------------------------------------------------------------------------------
+gerrit Tools
+#------------------------------------------------------------------------------
+	git clone https://github.com/indirect/gerrit-tools
+
+
+#------------------------------------------------------------------------------
+Git Mirror:
+#------------------------------------------------------------------------------
+	First, create a folder hosting locally the mirror
+	 mkdir -p /usr/local/mirror/1a
+	 cd /usr/local/mirror/1a
+	Sounds a bug in 1A "patched" repo prevents to get --mirror option of init working fine, hence the following is a way to work around it:
+	 git clone --bare ssh://android.intel.com/manifests.git
+	Then create the mirror:
+	 repo init -u /usr/local/mirror/1a/manifests.git -b android/master --mirror
+	and sync it ( all branches, force execution in case of error):
+	 repo sync -j5 -a -f
+	To create a fresh work space
+	 mkdir -p /usr/local/work/1A-r2 && cd /usr/local/work/1A-r2
+	 repo init -u /usr/local/mirror/1a/manifests.git --reference=/usr/local/mirror/1a -b android/master -m r2
+	 repo sync -j5 -c
+	This tells repo to fetch from the local mirror instead of a remote mirror, and will fetch from the remote only on basis needs.
+
+	You have to frequently sync your mirror:
+	 cd /usr/local/mirror/1a && repo sync -j5 -f -a
+	(and potentially the bare manifests repo)
+	 cd /usr/local/mirror/1a/manifests.git && git fetch --all
+
+	Mirroring several branches
+	#! /bin/bash
+	MIRROR_LOCATION=/usr/local/mirror/1a
+	manifest_update()
+	{
+		rm -Rf .repo
+		echo -e "repo init -b $1 -u $MIRROR_LOCATION/manifests.git --mirror -m $2"
+		repo init -b $1 -u $MIRROR_LOCATION/manifests.git --mirror -m $2
+		repo sync -j5 -f
+	}
+	cd $MIRROR_LOCATION
+	manifest_update android/m/mr1/stable/sf3gr_g/master sf3gr_g_mr1
+	manifest_update android/m/mr1/stable/master r2
+	manifest_update integ/kernel_v4.1 kernel_v4p1
+	manifest_update android/master r2
+
+
+#------------------------------------------------------------------------------
+# Proxy
+#------------------------------------------------------------------------------
+
+	In apt.conf:
+	 Acquire::http::Proxy "http://proxy:911/";
+	In .bashrc:
+	 export ftp_proxy='http://proxy:911/'
+	 export http_proxy='http://proxy:911/'
+	 export https_proxy='http://proxy:912/'
+	 export socks_proxy='http://proxy:1080/'
+	 export no_proxy='127.0.0.1,10.0.0.0/8,localhost,intel.com'
+	In /etc/environment:
+	 ftp_proxy=http://proxy:911/
+	 http_proxy=http://proxy:911/
+	 https_proxy=http://proxy:912/
+	 socks_proxy=http://proxy:1080/
+	 no_proxy=127.0.0.1,10.0.0.0/8,localhost,intel.com
+	In .ssh/config:
+	 Host <hostname>
+	 	ProxyCommand /bin/nc.openbsd -x proxy:1080 %h %p
+	In .wgetrc:
+	 use_proxy=yes
+	 ftp_proxy=http://proxy:911/
+	 http_proxy=http://proxy:911/
+	 https_proxy=http://proxy:912/
+	 no_proxy=127.0.0.1,10.0.0.0/8,localhost,intel.com
+	In your tsocks.conf:
+	 local = 192.168.0.0/255.255.255.0
+	 local = 134.134.0.0/255.255.0.0
+	 local = 10.0.0.0/255.0.0.0
+	 server = proxy
+	 server_type = 5
+	 server_port = 1080
+	In .gitconfig:
+	 [http]
+	 	proxy = "http://proxy:911/"
+	 [https]
+	 	proxy = "http://proxy:912/"
+	[edit] gitproxy
+
+	To be able to clone git: URLs you need to add to your .gitconfig:
+	 [core]
+	       gitproxy = gitproxy.sh
+	Then you need a gitproxy.sh in your path, like the following:
+	 #!/bin/sh
+	 exec /bin/nc.openbsd -x proxy:1080 -X5 "$1" "$2"
+
